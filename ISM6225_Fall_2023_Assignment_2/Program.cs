@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  
 YOU ARE NOT ALLOWED TO MODIFY ANY FUNCTION DEFINATION's PROVIDED.
 WRITE YOUR CODE IN THE RESPECTIVE QUESTION FUNCTION BLOCK
@@ -7,6 +7,7 @@ WRITE YOUR CODE IN THE RESPECTIVE QUESTION FUNCTION BLOCK
 */
 
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ISM6225_Fall_2023_Assignment_2
 {
@@ -16,7 +17,7 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             //Question 1:
             Console.WriteLine("Question 1:");
-            int[] nums1 = { 0, 1, 3, 50, 75 };
+            int[] nums1 = { 0,1, 3, 50,75 };
             int upper = 99, lower = 0;
             IList<IList<int>> missingRanges = FindMissingRanges(nums1, lower, upper);
             string result = ConvertIListToNestedList(missingRanges);
@@ -34,7 +35,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 3:
             Console.WriteLine("Question 3");
-            int[] prices_array = { 7, 1, 5, 3, 6, 4 };
+            int[] prices_array = { 7, 6, 4, 3, 1 };
             int max_profit = MaxProfit(prices_array);
             Console.WriteLine(max_profit);
             Console.WriteLine();
@@ -42,7 +43,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 4:
             Console.WriteLine("Question 4");
-            string s1 = "69";
+            string s1 = "8";
             bool IsStrobogrammaticNumber = IsStrobogrammatic(s1);
             Console.WriteLine(IsStrobogrammaticNumber);
             Console.WriteLine();
@@ -50,7 +51,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 5:
             Console.WriteLine("Question 5");
-            int[] numbers = { 1, 2, 3, 1, 1, 3 };
+            int[] numbers = { 1, 1, 1, 1 };
             int noOfPairs = NumIdenticalPairs(numbers);
             Console.WriteLine(noOfPairs);
             Console.WriteLine();
@@ -58,7 +59,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 6:
             Console.WriteLine("Question 6");
-            int[] maximum_numbers = { 3, 2, 1 };
+            int[] maximum_numbers = { 3,2,1};
             int third_maximum_number = ThirdMax(maximum_numbers);
             Console.WriteLine(third_maximum_number);
             Console.WriteLine();
@@ -66,7 +67,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 7:
             Console.WriteLine("Question 7:");
-            string currentState = "++++";
+            string currentState = "+++";
             IList<string> combinations = GeneratePossibleNextMoves(currentState);
             string combinationsString = ConvertIListToArray(combinations);
             Console.WriteLine(combinationsString);
@@ -75,7 +76,7 @@ namespace ISM6225_Fall_2023_Assignment_2
 
             //Question 8:
             Console.WriteLine("Question 8:");
-            string longString = "leetcodeisacommunityforcoders";
+            string longString = "hello how are you";
             string longStringAfterVowels = RemoveVowels(longString);
             Console.WriteLine(longStringAfterVowels);
             Console.WriteLine();
@@ -108,19 +109,108 @@ namespace ISM6225_Fall_2023_Assignment_2
         Time complexity: O(n), space complexity:O(1)
         */
 
-        public static IList<IList<int>> FindMissingRanges(int[] nums, int lower, int upper)
+        public static IList<IList<int>> FindMissingRanges(int[] numbers, int lowerBound, int upperBound)
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return new List<IList<int>>();
+                // Ensuring that the constraint is met: -109 <= lowerBound <= upperBound <= 109
+                if (lowerBound > upperBound || lowerBound < -109 || upperBound > 109)
+                {
+                    throw new ArgumentException("Invalid lower or upper bounds.");
+                }
+
+                // Ensuring that the length of the array is between 0 and 100 (inclusive)
+                if (numbers.Length > 100 || numbers.Length < 0)
+                {
+                    throw new ArgumentException("The length of the numbers array should be between 0 and 100");
+                }
+
+                // Handle duplicate values
+                HashSet<int> uniqueValues = new HashSet<int>();
+                foreach (int num in numbers)
+                {
+                    if (!uniqueValues.Add(num))
+                    {
+                        throw new ArgumentException("Duplicate values found in the numbers array.");
+                    }
+                }
+
+                IList<IList<int>> result = new List<IList<int>>();
+
+                // Check if the input array 'numbers' is empty or null
+                if (numbers == null || numbers.Length == 0)
+                {
+                    if (lowerBound == upperBound)
+                    {
+                        // If the lower and upper bounds are the same, add a single-element range
+                        result.Add(new List<int> { lowerBound });
+                    }
+                    else
+                    {
+                        // If the lower and upper bounds are different, add a range spanning from lowerBound to upperBound
+                        result.Add(new List<int> { lowerBound, upperBound });
+                    }
+                }
+                else
+                {
+                    // Check if there is a missing range before the first element
+                    if (lowerBound < numbers[0])
+                    {
+                        if (lowerBound == numbers[0] - 1)
+                        {
+                            // If the missing range is just one element, add it to 'result'
+                            result.Add(new List<int> { lowerBound });
+                        }
+                        else
+                        {
+                            // If the missing range is more than one element, add it as a range
+                            result.Add(new List<int> { lowerBound, numbers[0] - 1 });
+                        }
+                    }
+
+                    for (int i = 1; i < numbers.Length; i++)
+                    {
+                        long diff = (long)numbers[i] - numbers[i - 1];
+                        if (diff > 1)
+                        {
+                            if (diff == 2)
+                            {
+                                // If there is exactly one missing element, add it to 'result'
+                                result.Add(new List<int> { numbers[i - 1] + 1 });
+                            }
+                            else
+                            {
+                                // If there is more than one missing element, add the range to 'result'
+                                result.Add(new List<int> { numbers[i - 1] + 1, numbers[i] - 1 });
+                            }
+                        }
+                    }
+
+                    // Check if there is a missing range after the last element
+                    if (upperBound > numbers[numbers.Length - 1])
+                    {
+                        if (upperBound == numbers[numbers.Length - 1] + 1)
+                        {
+                            // If the missing range is just one element, add it to 'result'
+                            result.Add(new List<int> { upperBound });
+                        }
+                        else
+                        {
+                            // If the missing range is more than one element, add it as a range
+                            result.Add(new List<int> { numbers[numbers.Length - 1] + 1, upperBound });
+                        }
+                    }
+                }
+
+                return result;
             }
             catch (Exception)
             {
                 throw;
             }
-
         }
+
+
 
         /*
          
@@ -156,14 +246,54 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return s.Length == 0;
+                if (s.Length < 1 || s.Length > 104)
+                {
+                    throw new ArgumentException("Invalid input: s length out of bounds");
+                }
+
+                Stack<char> stack = new Stack<char>();
+
+                foreach (char c in s)
+                {
+                    if (c == '(' || c == '[' || c == '{')
+                    {
+                        stack.Push(c);
+                    }
+                    else if (c == ')' || c == ']' || c == '}')
+                    {
+                        if (stack.Count == 0)
+                        {
+                            return false;
+                        }
+
+                        char top = stack.Pop();
+
+                        if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{'))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid input: s contains characters other than '()[]{}'");
+                    }
+                }
+
+                if (stack.Count > 0)
+                {
+                    return false;
+                }
+
+                return true;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+
+
 
         /*
 
@@ -191,14 +321,29 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 1;
+                int maxProfit = 0;
+                int minPrice = int.MaxValue;
+
+                foreach (int price in prices)
+                {
+                    if (price < minPrice)
+                    {
+                        minPrice = price; // Update the minimum price
+                    }
+                    else if (price - minPrice > maxProfit)
+                    {
+                        maxProfit = price - minPrice; // Update the maximum profit
+                    }
+                }
+
+                return maxProfit;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
 
         /*
         
@@ -225,18 +370,54 @@ namespace ISM6225_Fall_2023_Assignment_2
         Time complexity:O(n), space complexity:O(1)
         */
 
-        public static bool IsStrobogrammatic(string s)
+        public static bool IsStrobogrammatic(string num)
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return false;
+                // Create a dictionary to map strobogrammatic pairs
+                Dictionary<char, char> strobogrammaticMap = new Dictionary<char, char>
+        {
+            {'0', '0'},
+            {'1', '1'},
+            {'6', '9'},
+            {'8', '8'},
+            {'9', '6'}
+        };
+
+                int left = 0;
+                int right = num.Length - 1;
+
+                while (left <= right)
+                {
+                    char leftChar = num[left];
+                    char rightChar = num[right];
+
+                    if (!strobogrammaticMap.ContainsKey(leftChar) || strobogrammaticMap[leftChar] != rightChar)
+                    {
+                        return false;
+                    }
+
+                    left++;
+                    right--;
+                }
+
+                // Ensure that there are no leading zeros (except for zero itself)
+                if (num.Length > 1 && num[0] == '0')
+                {
+                    return false;
+                }
+
+                return true;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+
+
+
 
         /*
 
@@ -271,14 +452,32 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 0;
+                int[] count = new int[101]; // As per the constraints (1 <= nums[i] <= 100)
+
+                foreach (int num in nums)
+                {
+                    count[num]++;
+                }
+
+                int goodPairs = 0;
+
+                for (int i = 1; i <= 100; i++)
+                {
+                    if (count[i] > 1)
+                    {
+                        goodPairs += (count[i] * (count[i] - 1)) / 2;
+                    }
+                }
+
+                return goodPairs;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+
 
         /*
         Question 6
@@ -316,19 +515,54 @@ namespace ISM6225_Fall_2023_Assignment_2
 
         Time complexity:O(nlogn), space complexity:O(n)
         */
-
         public static int ThirdMax(int[] nums)
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 0;
+                long max1 = long.MinValue;  // Initialize to the smallest possible value
+                long max2 = long.MinValue;
+                long max3 = long.MinValue;
+
+                foreach (int num in nums)
+                {
+                    if (num < -231 || num > 230)
+                    {
+                        throw new ArgumentException("Invalid input: num[i] is out of range.");
+                    }
+
+                    if (num == max1 || num == max2 || num == max3)
+                    {
+                        continue;  // Skip duplicates
+                    }
+
+                    if (num > max1)
+                    {
+                        max3 = max2;
+                        max2 = max1;
+                        max1 = num;
+                    }
+                    else if (num > max2)
+                    {
+                        max3 = max2;
+                        max2 = num;
+                    }
+                    else if (num > max3)
+                    {
+                        max3 = num;
+                    }
+                }
+
+                // If a third maximum exists, return it; otherwise, return the maximum
+                return max3 == long.MinValue ? (int)max1 : (int)max3;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+
+
 
         /*
         
@@ -349,19 +583,44 @@ namespace ISM6225_Fall_2023_Assignment_2
 
         Timecomplexity:O(n), Space complexity:O(n)
         */
-
         public static IList<string> GeneratePossibleNextMoves(string currentState)
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return new List<string>() { };
+                if (string.IsNullOrEmpty(currentState) || currentState.Length > 500 || !currentState.All(c => c == '+' || c == '-'))
+                {
+                    throw new ArgumentException("Invalid input");
+                }
+
+                IList<string> possibleMoves = new List<string>();
+
+                char[] currentStateArray = currentState.ToCharArray();
+
+                for (int i = 0; i < currentStateArray.Length - 1; i++)
+                {
+                    if (currentStateArray[i] == '+' && currentStateArray[i + 1] == '+')
+                    {
+                        // Flip "++" to "--"
+                        currentStateArray[i] = '-';
+                        currentStateArray[i + 1] = '-';
+                        possibleMoves.Add(new string(currentStateArray));
+                        // Revert the change for backtracking
+                        currentStateArray[i] = '+';
+                        currentStateArray[i + 1] = '+';
+                    }
+                }
+
+                return possibleMoves;
             }
             catch (Exception)
             {
                 throw;
             }
         }
+
+
+
+
 
         /*
 
@@ -383,9 +642,10 @@ namespace ISM6225_Fall_2023_Assignment_2
 
         public static string RemoveVowels(string s)
         {
-            // Write your code here and you can modify the return value according to the requirements
-            return "";
+            // Use a regular expression to remove vowels 'a', 'e', 'i', 'o', and 'u'
+            return Regex.Replace(s, "[aeiouAEIOU]", "");
         }
+
 
         /* Inbuilt Functions - Don't Change the below functions */
         static string ConvertIListToNestedList(IList<IList<int>> input)
